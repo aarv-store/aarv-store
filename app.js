@@ -170,6 +170,7 @@
     });
     $('#rackOpen').onclick = function () { bukaDetail(aktif); };
   }
+  window.addEventListener('aarv:select', function (e) { if (e.detail && e.detail.id) renderRack(e.detail.id); });
 
   function sizeGuideHTML() {
     return '<details class="size-guide"><summary>SIZE GUIDE & REKOMENDASI UKURAN</summary>' +

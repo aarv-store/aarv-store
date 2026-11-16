@@ -343,3 +343,15 @@ body{background:radial-gradient(ellipse at 50% 16%,#202521 0,#0d0f0e 48%,#090a09
  .rack-name{font-size:10px}.rack-index{font-size:8px}.rack-selected{padding:14px 13px;gap:10px;margin:0 auto 14px}.rack-selected-copy strong{font-size:16px}.rack-selected-copy span{font-size:11px}.rack-open{width:44px;height:44px}
  .rack-hint{display:none}.size-calc{grid-template-columns:1fr 1fr}
 }
+
+
+/* AЯRV interactive 3D hanger rack */
+.rack-3d{position:relative;width:100%;height:430px;margin:0 auto;overflow:hidden;touch-action:pan-y;cursor:grab}
+.rack-3d canvas{display:block;width:100%;height:100%;outline:none}
+.rack-3d canvas:focus-visible{outline:1px solid rgba(226,220,203,.65);outline-offset:-5px;border-radius:12px}
+.rack-3d-help{position:relative;text-align:center;margin:-2px 0 18px;color:#9ba198;font-size:9px;font-weight:700;letter-spacing:.19em}
+.rack-3d-help span{padding:0 8px;color:#c4a77c}
+.rack-3d-ready .rack-track{display:none}
+.rack-3d-ready .rack-line{margin-top:36px}
+@media(max-width:700px){.rack-3d{height:330px;margin-top:4px}.rack-3d-help{font-size:8px;letter-spacing:.1em;margin-bottom:14px}.rack-3d-ready .rack-line{margin-top:28px}}
+@media(prefers-reduced-motion:reduce){.rack-3d canvas{animation:none}}
