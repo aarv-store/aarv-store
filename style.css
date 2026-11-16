@@ -355,3 +355,29 @@ body{background:radial-gradient(ellipse at 50% 16%,#202521 0,#0d0f0e 48%,#090a09
 .rack-3d-ready .rack-line{margin-top:36px}
 @media(max-width:700px){.rack-3d{height:330px;margin-top:4px}.rack-3d-help{font-size:8px;letter-spacing:.1em;margin-bottom:14px}.rack-3d-ready .rack-line{margin-top:28px}}
 @media(prefers-reduced-motion:reduce){.rack-3d canvas{animation:none}}
+
+/* AЯRV — dark cinematic showroom treatment for the realistic 3D rack */
+.rack-stage{
+  background:
+    radial-gradient(ellipse at 50% 18%,rgba(183,125,69,.17),transparent 43%),
+    radial-gradient(ellipse at 50% 100%,rgba(75,82,73,.22),transparent 52%),
+    linear-gradient(180deg,#171a18 0%,#0d100e 58%,#090b0a 100%);
+  border-color:rgba(210,185,145,.16);
+  box-shadow:0 34px 100px rgba(0,0,0,.55),inset 0 1px 0 rgba(255,255,255,.035);
+}
+.rack-stage:before{
+  background:
+    radial-gradient(ellipse at 50% 12%,rgba(232,190,135,.11),transparent 38%),
+    linear-gradient(90deg,rgba(0,0,0,.18),transparent 18%,transparent 82%,rgba(0,0,0,.2));
+}
+.rack-3d{height:490px;isolation:isolate;cursor:grab}
+.rack-3d canvas{position:relative;z-index:1}
+.rack-3d-ready .rack-line{display:none}
+.rack-3d-help{margin:0 0 20px;color:#b0a18e;letter-spacing:.17em}
+.rack-meta{color:#b7aa98}
+.rack-selected{background:rgba(7,9,8,.78);border-color:rgba(213,184,139,.15);backdrop-filter:blur(12px)}
+.rack-open{background:#d1c2a9}
+@media(max-width:700px){
+  .rack-3d{height:390px;margin-top:0}
+  .rack-3d-help{font-size:8px;margin-bottom:14px}
+}
