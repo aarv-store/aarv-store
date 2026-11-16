@@ -153,6 +153,35 @@
     try { return stokPilihan(p, JSON.parse(i.kunci.slice(i.kunci.indexOf('|') + 1))); } catch (e) { return 99; }
   }
 
+  // ---------- archive rail ----------
+  var rackAktif = null;
+  function renderRack(id) {
+    if (!PRODUK.length || !$('#rackTrack')) return;
+    rackAktif = id || rackAktif || PRODUK[0].id;
+    var aktif = cari(rackAktif) || PRODUK[0];
+    $('#rackTrack').innerHTML = PRODUK.map(function (p, i) {
+      return '<button type="button" class="rack-item' + (p.id === aktif.id ? ' aktif' : '') + '" data-rack="' + esc(p.id) + '" aria-pressed="' + (p.id === aktif.id) + '">' +
+        '<span class="rack-hook"></span><span class="rack-photo"><img src="' + srcGambar(p.gambar[0]) + '" alt="' + esc(p.nama) + '"></span>' +
+        '<span class="rack-index">ARCHIVE / 00' + (i + 1) + '</span><span class="rack-name">' + esc(p.nama.split('—').pop().trim()) + '</span></button>';
+    }).join('');
+    $('#rackSelected').innerHTML = '<div class="rack-selected-copy"><small>SELECTED ARTIFACT · ' + esc(aktif.kategori.toUpperCase()) + '</small><strong>' + esc(aktif.nama) + '</strong><span>' + rp(aktif.harga) + ' · ' + (aktif.stok ? 'STOK TERSEDIA' : 'STOK HABIS') + '</span></div><button class="rack-open" id="rackOpen" aria-label="Lihat detail ' + esc(aktif.nama) + '"><svg viewBox="0 0 24 24"><path d="M7 17L17 7M9 7h8v8"/></svg></button>';
+    $('#rackTrack').querySelectorAll('[data-rack]').forEach(function (b) {
+      b.addEventListener('click', function () { renderRack(b.dataset.rack); });
+    });
+    $('#rackOpen').onclick = function () { bukaDetail(aktif); };
+  }
+
+  function sizeGuideHTML() {
+    return '<details class="size-guide"><summary>SIZE GUIDE & REKOMENDASI UKURAN</summary>' +
+      '<table><thead><tr><th>SIZE</th><th>PANJANG</th><th>LEBAR</th><th>LENGAN</th></tr></thead><tbody>' +
+      '<tr><td>M</td><td>62 cm</td><td>56 cm</td><td>19 cm</td></tr><tr><td>L</td><td>64 cm</td><td>58 cm</td><td>20 cm</td></tr><tr><td>XL</td><td>68 cm</td><td>60 cm</td><td>21 cm</td></tr></tbody></table>' +
+      '<table><thead><tr><th>SIZE</th><th>TINGGI</th><th>BERAT</th></tr></thead><tbody>' +
+      '<tr><td>M</td><td>155–165 cm</td><td>45–55 kg</td></tr><tr><td>L</td><td>160–172 cm</td><td>55–65 kg</td></tr><tr><td>XL</td><td>168–180 cm</td><td>65–78 kg</td></tr></tbody></table>' +
+      '<p class="size-guide-note">Rekomendasi perkiraan. Sesuaikan dengan bentuk badan dan gaya fit yang diinginkan.</p>' +
+      '<div class="size-calc"><label>Tinggi badan (cm)<input type="number" min="100" max="220" data-size-height placeholder="Contoh: 170"></label><label>Berat badan (kg)<input type="number" min="25" max="200" data-size-weight placeholder="Contoh: 65"></label><div class="size-result" data-size-result>Masukkan tinggi dan berat badan untuk melihat rekomendasi.</div></div></details>' +
+      '<div class="material-note"><b>MATERIAL / COTTON COMBED 20s</b><br>Gramasi 200–210 GSM · Boxy Fit · Black<br>Front character logo + back graphic artwork A3.</div>';
+  }
+
   // ---------- detail ----------
   function bukaDetail(p) {
     var pilihan = {}, qty = 1, aktifGbr = 0;
@@ -163,7 +192,7 @@
         '<div class="galeri"><div class="galeri-utama"><img src="' + srcGambar(p.gambar[aktifGbr], aktifGbr) + '" alt="' + esc(p.nama) + '"></div>' +
         (p.gambar.length > 1 ? '<div class="galeri-kecil">' + p.gambar.map(function (g, i) { return '<button data-g="' + i + '" class="' + (i === aktifGbr ? 'aktif' : '') + '" aria-label="Gambar ' + (i + 1) + '"><img src="' + srcGambar(g, i) + '" alt=""></button>'; }).join('') + '</div>' : '') + '</div>' +
         '<div class="info"><span class="kat-kecil redup">' + esc(p.kategori) + '</span><h2>' + esc(p.nama) + '</h2>' +
-        '<span class="harga">' + rp(hargaVarian(p, pilihan)) + (p.hargaCoret ? ' <s>' + rp(p.hargaCoret) + '</s>' : '') + '</span><p>' + esc(p.deskripsi) + '</p>' +
+        '<span class="harga">' + rp(hargaVarian(p, pilihan)) + (p.hargaCoret ? ' <s>' + rp(p.hargaCoret) + '</s>' : '') + '</span><p>' + esc(p.deskripsi) + '</p>' + sizeGuideHTML() +
         (p.varian || []).map(function (v) {
           return '<div class="varian"><b>' + esc(v.nama) + '</b><div class="opsi">' + v.opsi.map(function (o) { return '<button data-v="' + esc(v.nama) + '" data-o="' + esc(o) + '" class="' + (pilihan[v.nama] === o ? 'aktif' : '') + (opsiHabis(p, o) ? ' opsi-habis' : '') + '"' + (opsiHabis(p, o) ? ' disabled aria-label="' + esc(o) + ', habis"' : '') + '>' + esc(o) + (opsiHabis(p, o) ? ' <small>habis</small>' : '') + (v.tambah && v.tambah[o] ? ' <small>+' + (v.tambah[o] / 1000) + 'rb</small>' : '') + '</button>'; }).join('') + '</div></div>';
         }).join('') +
@@ -173,6 +202,21 @@
     }
     render();
     var d = $('#detail'); if (!d.open) d.showModal();
+    $('#detailIsi').oninput = function (e) {
+      if (!e.target.matches('[data-size-height], [data-size-weight]')) return;
+      var box = $('#detailIsi'), h = +(box.querySelector('[data-size-height]').value), w = +(box.querySelector('[data-size-weight]').value), out = box.querySelector('[data-size-result]');
+      if (!h || !w || h < 100 || h > 220 || w < 25 || w > 200) { out.textContent = 'Masukkan tinggi dan berat badan yang valid.'; return; }
+      var candidates = [
+        {s:'M',h1:155,h2:165,w1:45,w2:55},
+        {s:'L',h1:160,h2:172,w1:55,w2:65},
+        {s:'XL',h1:168,h2:180,w1:65,w2:78}
+      ];
+      var fit = candidates.filter(function(c){return h>=c.h1 && h<=c.h2 && w>=c.w1 && w<=c.w2;})[0];
+      if (!fit) {
+        var nearest = candidates.map(function(c){var dh=h<c.h1?c.h1-h:h>c.h2?h-c.h2:0;var dw=w<c.w1?c.w1-w:w>c.w2?w-c.w2:0;return {s:c.s,d:dh/8+dw/8};}).sort(function(a,b){return a.d-b.d;})[0];
+        out.textContent = 'Rekomendasi terdekat: ' + nearest.s + ' (di luar rentang panduan). Cek tabel dan pilih berdasarkan preferensi fit.';
+      } else out.textContent = 'Rekomendasi ukuran: ' + fit.s + '. Sesuaikan lagi dengan bentuk badan dan gaya fit.';
+    };
     $('#detailIsi').onclick = function (e) {
       var t = e.target.closest('button'); if (!t) return;
       if (t.id === 'tutupDetail') return d.close();
@@ -235,13 +279,7 @@
     $('#pilihKota').innerHTML = '<option value="">— pilih —</option>' + TOKO.ongkir.map(function (o, i) { return '<option value="' + i + '">' + esc(o.kota) + (o.biaya ? ' (' + rp(o.biaya) + ')' : '') + '</option>'; }).join('');
     var pb = simpanan.get('katalog-pembeli', {}); var f = $('#formPesan');
     ['nama', 'alamat', 'catatan', 'kota'].forEach(function (k) { if (pb[k] != null) f.elements[k].value = pb[k]; });
-    var unggul = PRODUK.filter(function (p) { return p.label && p.stok !== 0; })[0] || PRODUK[0];
-    if (unggul) {
-      $('#sorotan').innerHTML = '<button class="sorotan-kartu" data-id="' + esc(unggul.id) + '"><span class="sorotan-gambar"><img src="' + srcGambar(unggul.gambar[0]) + '" alt="' + esc(unggul.nama) + '"></span>' +
-        '<span class="sorotan-info"><small>' + esc(unggul.label || 'Desain pilihan') + '</small><b>' + esc(unggul.nama) + '</b><span class="harga">' + rp(unggul.harga) + (unggul.hargaCoret ? ' <s>' + rp(unggul.hargaCoret) + '</s>' : '') + '</span></span>' +
-        '<span class="sorotan-panah" aria-hidden="true"><svg viewBox="0 0 24 24"><path d="M7 17L17 7M9 7h8v8"/></svg></span></button>';
-      $('#sorotan').onclick = function () { bukaDetail(unggul); };
-    }
+    renderRack(PRODUK[0] && PRODUK[0].id);
     $('#jumlahProduk').textContent = PRODUK.length;
     renderKategori(); renderGrid(); renderKeranjang();
     if (/[?&]keranjang\b/.test(location.search)) { if (!keranjang.length) { tambah(PRODUK[0], { Ukuran: 'M', Warna: 'Hitam' }, 2); tambah(PRODUK[2], { Warna: 'Terakota' }, 1); } bukaLaci(true); }
