@@ -35,24 +35,24 @@ window.PRODUK = [
     id: 'archive-001', nama: 'Archive 001 — CAT-01', kategori: 'Graphic Tee', harga: 95000, stok: 1, stokOpsi: { M: 0, L: 1, XL: 0 },
     deskripsi: 'Cotton Combed 20s · 200–210 GSM · Boxy Fit. Seri AЯRV — THE ARCHIVE. Karakter CAT dengan tulisan “Not in the Mood”. Kaos graphic boxy fit unisex berbahan cotton combed 20s, sablon logo/karakter kecil di dada kiri dan artwork karakter ukuran A3 di bagian belakang. Setiap kaos punya karakter, cerita, dan identitasnya sendiri.',
     varian: [{ nama: 'Ukuran', opsi: ['M', 'L', 'XL'] }],
-    gambar: ['img/archive-001-foto.jpg', 'img/archive-001-model.jpg', 'img/archive-001-detail.jpg']
+    gambar: ['img/archive-001-real-front.jpg', 'img/archive-001-real-back.jpg', 'img/archive-001-detail.jpg']
   },
   {
     id: 'archive-002', nama: 'Archive 002 — FOX-02', kategori: 'Graphic Tee', harga: 95000, stok: 2, stokOpsi: { M: 1, L: 1, XL: 0 },
     deskripsi: 'Cotton Combed 20s · 200–210 GSM · Boxy Fit. Seri AЯRV — THE ARCHIVE. Karakter FOX dengan tulisan “Nothing Excites Me Anymore”. Kaos graphic boxy fit unisex berbahan cotton combed 20s, sablon logo/karakter kecil di dada kiri dan artwork karakter ukuran A3 di bagian belakang. Setiap kaos punya karakter, cerita, dan identitasnya sendiri.',
     varian: [{ nama: 'Ukuran', opsi: ['M', 'L', 'XL'] }],
-    gambar: ['img/archive-002-foto.jpg', 'img/archive-002-model.jpg', 'img/archive-002-detail.jpg']
+    gambar: ['img/archive-002-real-front.jpg', 'img/archive-002-real-back.jpg', 'img/archive-002-detail.jpg']
   },
   {
     id: 'archive-003', nama: 'Archive 003 — DUCK-03', kategori: 'Graphic Tee', harga: 95000, stok: 1, stokOpsi: { M: 0, L: 0, XL: 1 },
     deskripsi: 'Cotton Combed 20s · 200–210 GSM · Boxy Fit. Seri AЯRV — THE ARCHIVE. Karakter DUCK dengan tulisan “Confused, Full of Anxiety”. Kaos graphic boxy fit unisex berbahan cotton combed 20s, sablon logo/karakter kecil di dada kiri dan artwork karakter ukuran A3 di bagian belakang. Setiap kaos punya karakter, cerita, dan identitasnya sendiri.',
     varian: [{ nama: 'Ukuran', opsi: ['M', 'L', 'XL'] }],
-    gambar: ['img/archive-003-foto.jpg', 'img/archive-003-model.jpg', 'img/archive-003-detail.jpg']
+    gambar: ['img/archive-003-real-front.jpg', 'img/archive-003-real-back.jpg', 'img/archive-003-detail.jpg']
   },
   {
     id: 'archive-004', nama: 'Archive 004 — SUBJECT-04', kategori: 'Graphic Tee', harga: 95000, stok: 2, stokOpsi: { M: 1, L: 1, XL: 0 },
     deskripsi: 'Cotton Combed 20s · 200–210 GSM · Boxy Fit. Seri AЯRV — THE ARCHIVE. Karakter SUBJECT dengan tulisan “I Have No Idea”. Kaos graphic boxy fit unisex berbahan cotton combed 20s, sablon logo/karakter kecil di dada kiri dan artwork karakter ukuran A3 di bagian belakang. Setiap kaos punya karakter, cerita, dan identitasnya sendiri.',
     varian: [{ nama: 'Ukuran', opsi: ['M', 'L', 'XL'] }],
-    gambar: ['img/archive-004-foto.jpg', 'img/archive-004-model.jpg', 'img/archive-004-detail.jpg']
+    gambar: ['img/archive-004-real-front.jpg', 'img/archive-004-real-back.jpg', 'img/archive-004-detail.jpg']
   }
 ];

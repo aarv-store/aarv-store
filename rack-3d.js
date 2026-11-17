@@ -1,6 +1,7 @@
-/* AЯRV — Cinematic 3D Archive Rack
-   Real product cut-outs on gently curved cloth meshes, wood hangers and a dark studio rail.
-   Drag a shirt horizontally to rotate it through 360 degrees; tap/click to select it.
+/* AЯRV — Cinematic 3D garment rack
+   Real front/back garment cut-outs on a curved cloth surface. Drag each shirt to rotate 360°.
+   Product gallery photos are the user's approved real product references; the rack uses clean
+   alpha cut-outs so the original photographic studio background is not repeated four times.
 */
 import * as THREE from 'https://cdn.jsdelivr.net/npm/three@0.160.0/build/three.module.js';
 
@@ -14,268 +15,230 @@ if (root) {
   ];
 
   const scene = new THREE.Scene();
-  const camera = new THREE.PerspectiveCamera(34, 1, 0.1, 100);
-  camera.position.set(0, 0.25, 12.8);
-  camera.lookAt(0, 0.1, 0);
+  scene.fog = new THREE.Fog(0x11100e, 13, 26);
+  const camera = new THREE.PerspectiveCamera(32, 1, 0.1, 80);
+  camera.position.set(0, 0.15, 13.1);
+  camera.lookAt(0, 0.05, 0);
 
   const renderer = new THREE.WebGLRenderer({ alpha: true, antialias: true, powerPreference: 'high-performance' });
-  renderer.setPixelRatio(Math.min(window.devicePixelRatio || 1, 1.75));
+  renderer.setPixelRatio(Math.min(window.devicePixelRatio || 1, 1.8));
   renderer.outputColorSpace = THREE.SRGBColorSpace;
   renderer.toneMapping = THREE.ACESFilmicToneMapping;
-  renderer.toneMappingExposure = 1.18;
+  renderer.toneMappingExposure = 1.12;
   renderer.shadowMap.enabled = true;
   renderer.shadowMap.type = THREE.PCFSoftShadowMap;
-  renderer.domElement.setAttribute('aria-label', 'Rak hanger 3D AЯRV. Seret kaos untuk memutar 360 derajat dan klik untuk memilih desain.');
+  renderer.domElement.setAttribute('aria-label', 'Rak 3D AЯRV. Seret setiap kaos untuk melihat sisi depan dan belakang hingga 360 derajat.');
   renderer.domElement.setAttribute('role', 'application');
+  renderer.domElement.setAttribute('aria-describedby', 'rack3d-instructions');
   root.appendChild(renderer.domElement);
 
-  // Studio lighting: warm key, cool fill and a soft amber rim.
-  scene.add(new THREE.HemisphereLight(0xc8c9c3, 0x10110f, 1.25));
-  const key = new THREE.SpotLight(0xffd9ad, 115, 24, Math.PI / 4.2, 0.7, 1.4);
-  key.position.set(-3.8, 7.2, 5.5); key.target.position.set(0, 0, 0); key.castShadow = true;
-  key.shadow.mapSize.set(1024, 1024); scene.add(key, key.target);
-  const fill = new THREE.DirectionalLight(0xb7c4d0, 1.7); fill.position.set(5, 2.5, 4); scene.add(fill);
-  const rim = new THREE.PointLight(0xc58e53, 28, 15, 2); rim.position.set(-4, 1.4, -2.8); scene.add(rim);
-  const topGlow = new THREE.PointLight(0xffd8ad, 16, 11, 2); topGlow.position.set(1.5, 4.4, 2.5); scene.add(topGlow);
+  // Warm cinematic key light, soft fill, and a narrow amber rim.
+  scene.add(new THREE.HemisphereLight(0xd7d4cb, 0x17130f, 1.05));
+  const key = new THREE.SpotLight(0xffd5a6, 145, 26, Math.PI / 4.4, 0.68, 1.25);
+  key.position.set(-4.8, 7.5, 6.2); key.target.position.set(0, 0, 0); key.castShadow = true;
+  key.shadow.mapSize.set(1536, 1536); key.shadow.bias = -0.00012;
+  scene.add(key, key.target);
+  const fill = new THREE.DirectionalLight(0xb8c6d2, 1.35); fill.position.set(5.5, 2.8, 5); scene.add(fill);
+  const rim = new THREE.PointLight(0xd69a5c, 35, 16, 2); rim.position.set(-4.5, 1.2, -2.8); scene.add(rim);
+  const top = new THREE.PointLight(0xffe0b8, 19, 13, 2); top.position.set(1.8, 5.2, 1.8); scene.add(top);
 
-  // Matte black rail and supports.
-  const blackMetal = new THREE.MeshStandardMaterial({ color: 0x171a18, metalness: 0.82, roughness: 0.28 });
-  const brushedMetal = new THREE.MeshStandardMaterial({ color: 0x77766d, metalness: 0.9, roughness: 0.24 });
-  function cylinderBetween(a, b, radius, material, segments = 16) {
-    const start = new THREE.Vector3(...a), end = new THREE.Vector3(...b);
-    const direction = new THREE.Vector3().subVectors(end, start);
-    const mesh = new THREE.Mesh(new THREE.CylinderGeometry(radius, radius, direction.length(), segments), material);
-    mesh.position.copy(start).add(end).multiplyScalar(0.5);
-    mesh.quaternion.setFromUnitVectors(new THREE.Vector3(0, 1, 0), direction.normalize());
-    mesh.castShadow = true; scene.add(mesh); return mesh;
+  const metal = new THREE.MeshStandardMaterial({ color: 0x171918, metalness: 0.9, roughness: 0.24 });
+  const steel = new THREE.MeshStandardMaterial({ color: 0x85847c, metalness: 0.94, roughness: 0.19 });
+  const wood = new THREE.MeshStandardMaterial({ color: 0x714a2e, roughness: 0.46, metalness: 0.02 });
+  const darkWood = new THREE.MeshStandardMaterial({ color: 0x352319, roughness: 0.65 });
+  const seam = new THREE.MeshStandardMaterial({ color: 0x202321, roughness: 0.92 });
+
+  function tube(points, radius, material, parent, segments = 36) {
+    const curve = new THREE.CatmullRomCurve3(points.map(p => new THREE.Vector3(...p)));
+    const mesh = new THREE.Mesh(new THREE.TubeGeometry(curve, segments, radius, 9, false), material);
+    mesh.castShadow = true; mesh.receiveShadow = true; parent.add(mesh); return mesh;
   }
-  const rail = new THREE.Mesh(new THREE.CylinderGeometry(0.035, 0.035, 10.2, 28), blackMetal);
-  rail.rotation.z = Math.PI / 2; rail.position.set(0, 2.08, -0.05); rail.castShadow = true; scene.add(rail);
-  // Small warm metallic end caps.
-  [-5.12, 5.12].forEach(x => {
-    const cap = new THREE.Mesh(new THREE.SphereGeometry(0.055, 16, 12), brushedMetal);
-    cap.position.set(x, 2.08, -0.05); scene.add(cap);
-    cylinderBetween([x, 2.05, -0.05], [x, -1.42, -0.05], 0.027, blackMetal, 12);
-    const foot = new THREE.Mesh(new THREE.CylinderGeometry(0.2, 0.23, 0.055, 24), blackMetal);
-    foot.position.set(x, -1.43, -0.05); scene.add(foot);
+  function cylinderBetween(a, b, radius, material) {
+    const start = new THREE.Vector3(...a), end = new THREE.Vector3(...b);
+    const d = new THREE.Vector3().subVectors(end, start);
+    const m = new THREE.Mesh(new THREE.CylinderGeometry(radius, radius, d.length(), 20), material);
+    m.position.copy(start).add(end).multiplyScalar(.5);
+    m.quaternion.setFromUnitVectors(new THREE.Vector3(0, 1, 0), d.normalize());
+    m.castShadow = true; scene.add(m); return m;
+  }
+
+  // Heavy black steel rack with rounded end caps and weighted feet.
+  const rail = new THREE.Mesh(new THREE.CylinderGeometry(.043, .043, 10.5, 32), metal);
+  rail.rotation.z = Math.PI / 2; rail.position.set(0, 2.18, -.12); rail.castShadow = true; scene.add(rail);
+  [-5.22, 5.22].forEach(x => {
+    const cap = new THREE.Mesh(new THREE.SphereGeometry(.064, 18, 14), steel); cap.position.set(x, 2.18, -.12); scene.add(cap);
+    cylinderBetween([x, 2.14, -.12], [x, -1.48, -.12], .034, metal);
+    const foot = new THREE.Mesh(new THREE.CylinderGeometry(.24, .27, .075, 28), metal);
+    foot.position.set(x, -1.5, -.12); foot.castShadow = true; scene.add(foot);
+    const collar = new THREE.Mesh(new THREE.TorusGeometry(.055, .012, 8, 24), steel);
+    collar.rotation.x = Math.PI / 2; collar.position.set(x, 2.02, -.12); scene.add(collar);
   });
 
-  // A subtle studio floor catches a soft shadow beneath the rack.
-  const floor = new THREE.Mesh(new THREE.PlaneGeometry(24, 13), new THREE.MeshStandardMaterial({ color: 0x111311, roughness: 0.94, metalness: 0.05 }));
-  floor.rotation.x = -Math.PI / 2; floor.position.set(0, -1.47, -1.8); floor.receiveShadow = true; scene.add(floor);
+  // Matte floor and a restrained warm wall glow.
+  const floor = new THREE.Mesh(new THREE.PlaneGeometry(26, 16), new THREE.MeshStandardMaterial({ color: 0x171512, roughness: .96, metalness: .02 }));
+  floor.rotation.x = -Math.PI / 2; floor.position.set(0, -1.55, -1.8); floor.receiveShadow = true; scene.add(floor);
+  const wall = new THREE.Mesh(new THREE.PlaneGeometry(25, 12), new THREE.MeshStandardMaterial({ color: 0x171512, roughness: 1, metalness: 0 }));
+  wall.position.set(0, 1.7, -4.3); wall.receiveShadow = true; scene.add(wall);
 
-  // Fine woven bump texture, deliberately very subtle so the supplied product artwork remains exact.
-  const noiseCanvas = document.createElement('canvas'); noiseCanvas.width = 128; noiseCanvas.height = 128;
-  const nctx = noiseCanvas.getContext('2d');
-  const noiseImage = nctx.createImageData(128, 128);
-  for (let i = 0; i < noiseImage.data.length; i += 4) {
-    const v = 112 + Math.floor(Math.random() * 32);
-    noiseImage.data[i] = v; noiseImage.data[i + 1] = v; noiseImage.data[i + 2] = v; noiseImage.data[i + 3] = 255;
+  // Fine woven normal/bump detail, subtle enough not to obscure the printed artwork.
+  const noise = document.createElement('canvas'); noise.width = noise.height = 128;
+  const ctx = noise.getContext('2d'); const pixels = ctx.createImageData(128, 128);
+  for (let i = 0; i < pixels.data.length; i += 4) {
+    const n = 118 + Math.floor(Math.random() * 22);
+    pixels.data[i] = n; pixels.data[i + 1] = n; pixels.data[i + 2] = n; pixels.data[i + 3] = 255;
   }
-  nctx.putImageData(noiseImage, 0, 0);
-  const weave = new THREE.CanvasTexture(noiseCanvas);
-  weave.wrapS = weave.wrapT = THREE.RepeatWrapping; weave.repeat.set(5, 5);
+  ctx.putImageData(pixels, 0, 0);
+  const weave = new THREE.CanvasTexture(noise); weave.wrapS = weave.wrapT = THREE.RepeatWrapping; weave.repeat.set(4, 5);
+
+  // Cloth has a gently rounded chest, vertical gravity folds, and irregular hem drape.
+  function clothGeometry(width, height, side) {
+    const geo = new THREE.PlaneGeometry(width, height, 52, 64);
+    const p = geo.attributes.position;
+    for (let i = 0; i < p.count; i++) {
+      const x = p.getX(i), y = p.getY(i);
+      const nx = x / (width * .5), ny = y / (height * .5);
+      const shoulder = Math.exp(-Math.pow((ny - .63) * 3.4, 2));
+      const sideDrape = Math.pow(Math.abs(nx), 1.7) * Math.sin(ny * 7.5 + nx * 2.1) * .025;
+      const verticalFold = Math.sin(nx * 18 + .8) * .012 * (0.35 + Math.max(0, ny));
+      const hemWave = Math.sin(nx * 7.5 + side * .5) * .025 * Math.pow(Math.max(0, -ny), 2);
+      const chestBow = .11 * (1 - nx * nx) * (0.45 + shoulder * .55);
+      p.setZ(i, chestBow + sideDrape + verticalFold + hemWave + side * .002);
+    }
+    geo.computeVertexNormals(); return geo;
+  }
 
   const loader = new THREE.TextureLoader();
-  const shirtGroups = [];
-  const wood = new THREE.MeshStandardMaterial({ color: 0x62432b, roughness: 0.52, metalness: 0.04 });
-  const hookMetal = new THREE.MeshStandardMaterial({ color: 0x9a9b91, metalness: 0.9, roughness: 0.2 });
-  const seamMat = new THREE.MeshStandardMaterial({ color: 0x282a27, roughness: 0.88 });
-
-  function addTube(points, radius, material, parent, tubularSegments = 32) {
-    const curve = new THREE.CatmullRomCurve3(points.map(p => new THREE.Vector3(p[0], p[1], p[2])));
-    const mesh = new THREE.Mesh(new THREE.TubeGeometry(curve, tubularSegments, radius, 9, false), material);
-    mesh.castShadow = true; parent.add(mesh); return mesh;
+  const shirts = [];
+  function makeHanger(group) {
+    // Wide contoured wooden shoulders, center spine, and a real metal hook.
+    tube([[-.83, 1.18, -.13], [-.64, 1.27, -.13], [-.34, 1.39, -.13], [0, 1.44, -.13], [.34, 1.39, -.13], [.64, 1.27, -.13], [.83, 1.18, -.13]], .062, wood, group, 48);
+    tube([[-.08, 1.40, -.13], [0, 1.20, -.13], [.08, 1.40, -.13]], .032, darkWood, group, 18);
+    tube([[0, 1.43, -.13], [0, 1.66, -.13], [.025, 1.88, -.13], [.15, 1.98, -.13], [.27, 1.91, -.13], [.27, 1.79, -.13]], .022, steel, group, 32);
+    const neck = new THREE.Mesh(new THREE.TorusGeometry(.085, .018, 8, 24), steel);
+    neck.rotation.x = Math.PI / 2; neck.position.set(0, 1.43, -.13); group.add(neck);
   }
 
-  // A softly bowed cloth surface: the transparent cut-out carries the real shirt photo,
-  // while the curved mesh gives it a little volume and catches studio light while rotating.
-  function makeClothGeometry(width, height, zOffset) {
-    const geo = new THREE.PlaneGeometry(width, height, 36, 44);
-    const pos = geo.attributes.position;
-    for (let i = 0; i < pos.count; i++) {
-      const x = pos.getX(i), y = pos.getY(i);
-      const nx = x / (width * 0.5), ny = y / (height * 0.5);
-      const shoulder = Math.exp(-Math.pow((ny - 0.55) * 3.2, 2));
-      const drape = Math.sin((ny + 1) * 8.2 + nx * 2.2) * 0.012 * (1 - Math.min(1, Math.abs(nx)));
-      const fold = Math.sin(nx * 13 + ny * 2.5) * 0.009 * (0.4 + shoulder);
-      const bow = 0.13 * (1 - nx * nx) + drape + fold + zOffset;
-      pos.setZ(i, bow);
-    }
-    geo.computeVertexNormals();
-    return geo;
-  }
-
-  products.forEach((p, i) => {
+  products.forEach((product, index) => {
     const group = new THREE.Group();
-    group.position.set((i - 1.5) * 2.42, -0.12, 0);
-    scene.add(group);
+    group.position.set((index - 1.5) * 2.48, -.12, 0);
+    scene.add(group); makeHanger(group);
 
-    // The hanger is behind the shirt, with a broad wooden shoulder and polished metal hook.
-    addTube([[-0.78, 1.12, -0.11], [-0.55, 1.24, -0.11], [-0.28, 1.33, -0.11], [0, 1.37, -0.11], [0.28, 1.33, -0.11], [0.55, 1.24, -0.11], [0.78, 1.12, -0.11]], 0.052, wood, group, 42);
-    addTube([[0, 1.36, -0.11], [0, 1.57, -0.11], [0.02, 1.78, -0.11], [0.13, 1.88, -0.11], [0.24, 1.83, -0.11], [0.24, 1.73, -0.11]], 0.022, hookMetal, group, 28);
-    // Hanger center support.
-    addTube([[-0.08, 1.34, -0.11], [0, 1.16, -0.11], [0.08, 1.34, -0.11]], 0.026, wood, group, 16);
-
-    const frontTexture = loader.load(p.front, tex => { tex.colorSpace = THREE.SRGBColorSpace; tex.anisotropy = renderer.capabilities.getMaxAnisotropy(); });
-    const backTexture = loader.load(p.back, tex => { tex.colorSpace = THREE.SRGBColorSpace; tex.anisotropy = renderer.capabilities.getMaxAnisotropy(); });
-    frontTexture.minFilter = backTexture.minFilter = THREE.LinearMipmapLinearFilter;
-    const shirtMaterial = texture => new THREE.MeshStandardMaterial({
-      map: texture, bumpMap: weave, bumpScale: 0.012, roughness: 0.96, metalness: 0,
-      transparent: true, alphaTest: 0.08, side: THREE.DoubleSide
+    const loadTexture = path => {
+      const t = loader.load(path, tex => { tex.colorSpace = THREE.SRGBColorSpace; tex.anisotropy = renderer.capabilities.getMaxAnisotropy(); });
+      t.minFilter = THREE.LinearMipmapLinearFilter; t.magFilter = THREE.LinearFilter; return t;
+    };
+    const frontTexture = loadTexture(product.front);
+    const backTexture = loadTexture(product.back);
+    const material = texture => new THREE.MeshPhysicalMaterial({
+      map: texture, bumpMap: weave, bumpScale: .008, roughness: .985, metalness: 0,
+      clearcoat: .015, clearcoatRoughness: .9, transparent: true, alphaTest: .12,
+      side: THREE.DoubleSide, depthWrite: true
     });
 
-    const clothWidth = 2.45, clothHeight = 2.30;
-    // Thin, beveled tee silhouette adds real edge thickness when the garment turns sideways.
-    const teeShape = new THREE.Shape();
-    teeShape.moveTo(-0.48, 1.10);
-    teeShape.lineTo(-1.02, 0.91); teeShape.lineTo(-1.27, 0.28);
-    teeShape.lineTo(-1.00, 0.08); teeShape.lineTo(-0.82, 0.39);
-    teeShape.lineTo(-0.82, -1.13); teeShape.lineTo(0.82, -1.13);
-    teeShape.lineTo(0.82, 0.39); teeShape.lineTo(1.00, 0.08);
-    teeShape.lineTo(1.27, 0.28); teeShape.lineTo(1.02, 0.91);
-    teeShape.lineTo(0.48, 1.10);
-    teeShape.quadraticCurveTo(0.34, 0.79, 0, 0.77);
-    teeShape.quadraticCurveTo(-0.34, 0.79, -0.48, 1.10);
-    teeShape.closePath();
-    const bodyGeo = new THREE.ExtrudeGeometry(teeShape, { depth: 0.12, bevelEnabled: true, bevelSegments: 3, steps: 1, bevelSize: 0.025, bevelThickness: 0.025, curveSegments: 16 });
-    bodyGeo.center();
-    const bodyMat = new THREE.MeshStandardMaterial({ color: 0x090b0a, roughness: 0.97, metalness: 0.0, bumpMap: weave, bumpScale: 0.018 });
-    const body = new THREE.Mesh(bodyGeo, bodyMat);
-    body.position.set(0, -0.02, 0); body.castShadow = true; body.receiveShadow = true; group.add(body);
+    const w = 2.35, h = 2.43;
+    const front = new THREE.Mesh(clothGeometry(w, h, 1), material(frontTexture));
+    front.position.set(0, -.10, .08); front.castShadow = true; front.receiveShadow = true; group.add(front);
+    const back = new THREE.Mesh(clothGeometry(w, h, -1), material(backTexture));
+    back.position.set(0, -.10, -.08); back.rotation.y = Math.PI; back.castShadow = true; back.receiveShadow = true; group.add(back);
 
-    const front = new THREE.Mesh(makeClothGeometry(clothWidth, clothHeight, 0.09), shirtMaterial(frontTexture));
-    front.position.set(0, -0.02, 0.085); front.castShadow = true; front.receiveShadow = true; group.add(front);
-    const back = new THREE.Mesh(makeClothGeometry(clothWidth, clothHeight, -0.09), shirtMaterial(backTexture));
-    back.position.set(0, -0.02, -0.085); back.rotation.y = Math.PI; back.castShadow = true; back.receiveShadow = true; group.add(back);
+    // Subtle collar and shoulder seam detail sit behind the photo cut-out's own ribbing.
+    const collar = new THREE.Mesh(new THREE.TorusGeometry(.255, .018, 8, 40), seam);
+    collar.position.set(0, .99, .115); collar.scale.set(1.12, .57, 1); group.add(collar);
 
-    // Tiny collar/rib detail, visible above the neck opening in the product cut-out.
-    const collar = new THREE.Mesh(new THREE.TorusGeometry(0.255, 0.025, 8, 36), seamMat);
-    collar.position.set(0, 1.00, 0.11); collar.scale.set(1.15, 0.55, 1); group.add(collar);
-
-    group.userData.productId = p.id;
+    group.userData.productId = product.id;
     group.userData.baseY = group.position.y;
-    group.userData.baseX = group.position.x;
     group.userData.dragVelocity = 0;
-    shirtGroups.push({ group, id: p.id, index: i });
+    group.userData.targetScale = index === 0 ? 1.03 : .93;
+    group.userData.targetY = group.position.y + (index === 0 ? .045 : -.025);
+    shirts.push({ group, id: product.id, index });
   });
 
   const raycaster = new THREE.Raycaster();
   const pointer = new THREE.Vector2();
-  let active = shirtGroups[0] || null;
-  shirtGroups.forEach((s, i) => {
-    s.group.userData.targetScale = i === 0 ? 1.04 : 0.91;
-    s.group.userData.targetY = s.group.userData.baseY + (i === 0 ? 0.08 : -0.035);
-  });
-  let dragging = false, lastX = 0, moved = false, downGroup = null, lastMoveTime = 0;
-
-  function updatePointer(event) {
-    const rect = renderer.domElement.getBoundingClientRect();
-    pointer.x = ((event.clientX - rect.left) / rect.width) * 2 - 1;
-    pointer.y = -((event.clientY - rect.top) / rect.height) * 2 + 1;
+  let active = shirts[0] || null;
+  let dragging = false, down = null, lastX = 0, moved = false, lastTime = 0;
+  function pointerAt(e) {
+    const r = renderer.domElement.getBoundingClientRect();
+    pointer.x = ((e.clientX - r.left) / r.width) * 2 - 1;
+    pointer.y = -((e.clientY - r.top) / r.height) * 2 + 1;
   }
-  function pick(event) {
-    updatePointer(event); raycaster.setFromCamera(pointer, camera);
-    const intersections = raycaster.intersectObjects(shirtGroups.map(s => s.group), true);
+  function hit(e) {
+    pointerAt(e); raycaster.setFromCamera(pointer, camera);
+    const intersections = raycaster.intersectObjects(shirts.map(s => s.group), true);
     if (!intersections.length) return null;
-    let object = intersections[0].object;
-    while (object && !object.userData.productId) object = object.parent;
-    return object ? shirtGroups.find(s => s.group === object) || null : null;
+    let o = intersections[0].object; while (o && !o.userData.productId) o = o.parent;
+    return o ? shirts.find(s => s.group === o) || null : null;
   }
-  function selectShirt(item) {
-    if (!item) return;
-    active = item;
-    shirtGroups.forEach(s => {
-      const selected = s === item;
-      s.group.userData.targetScale = selected ? 1.04 : 0.91;
-      s.group.userData.targetY = s.group.userData.baseY + (selected ? 0.08 : -0.035);
+  function select(item) {
+    if (!item) return; active = item;
+    shirts.forEach(s => {
+      const chosen = s === item;
+      s.group.userData.targetScale = chosen ? 1.04 : .93;
+      s.group.userData.targetY = s.group.userData.baseY + (chosen ? .045 : -.025);
     });
     window.dispatchEvent(new CustomEvent('aarv:select', { detail: { id: item.id } }));
   }
-
-  renderer.domElement.addEventListener('pointerdown', event => {
-    const found = pick(event); if (!found) return;
-    downGroup = found; dragging = true; moved = false; lastX = event.clientX; lastMoveTime = performance.now();
-    found.group.userData.dragVelocity = 0;
-    renderer.domElement.setPointerCapture(event.pointerId);
-    renderer.domElement.style.cursor = 'grabbing';
+  renderer.domElement.addEventListener('pointerdown', e => {
+    const item = hit(e); if (!item) return;
+    down = item; dragging = true; moved = false; lastX = e.clientX; lastTime = performance.now();
+    item.group.userData.dragVelocity = 0; renderer.domElement.setPointerCapture(e.pointerId); renderer.domElement.style.cursor = 'grabbing';
   });
-  renderer.domElement.addEventListener('pointermove', event => {
-    if (!dragging) { renderer.domElement.style.cursor = pick(event) ? 'grab' : 'default'; return; }
-    const dx = event.clientX - lastX;
-    if (Math.abs(dx) > 1.2) moved = true;
-    if (downGroup) {
-      const dt = Math.max(8, performance.now() - lastMoveTime);
-      const delta = dx * 0.012;
-      downGroup.group.rotation.y += delta;
-      downGroup.group.userData.dragVelocity = delta / dt * 16;
+  renderer.domElement.addEventListener('pointermove', e => {
+    if (!dragging) { renderer.domElement.style.cursor = hit(e) ? 'grab' : 'default'; return; }
+    const dx = e.clientX - lastX; if (Math.abs(dx) > 1) moved = true;
+    if (down) {
+      const dt = Math.max(8, performance.now() - lastTime);
+      const delta = dx * .0105;
+      down.group.rotation.y += delta;
+      down.group.userData.dragVelocity = delta / dt * 16;
     }
-    lastX = event.clientX; lastMoveTime = performance.now();
+    lastX = e.clientX; lastTime = performance.now();
   });
   function endDrag() {
-    if (!dragging) return;
-    dragging = false; renderer.domElement.style.cursor = 'grab';
-    if (downGroup && !moved) selectShirt(downGroup);
-    else if (downGroup) active = downGroup;
-    downGroup = null;
+    if (!dragging) return; dragging = false; renderer.domElement.style.cursor = 'grab';
+    if (down && !moved) select(down); else if (down) active = down;
+    down = null;
   }
   renderer.domElement.addEventListener('pointerup', endDrag);
   renderer.domElement.addEventListener('pointercancel', endDrag);
   renderer.domElement.addEventListener('lostpointercapture', endDrag);
-  renderer.domElement.addEventListener('keydown', event => {
-    if (event.key !== 'ArrowLeft' && event.key !== 'ArrowRight') return;
-    const item = active || shirtGroups[0]; if (!item) return;
-    item.group.rotation.y += event.key === 'ArrowLeft' ? 0.22 : -0.22;
-    event.preventDefault();
+  renderer.domElement.addEventListener('keydown', e => {
+    if (!['ArrowLeft', 'ArrowRight'].includes(e.key)) return;
+    const item = active || shirts[0]; if (!item) return;
+    item.group.rotation.y += e.key === 'ArrowLeft' ? .22 : -.22; e.preventDefault();
   });
   renderer.domElement.tabIndex = 0;
 
-  // Keep the rack composition balanced on desktop and mobile.
   function resize() {
-    const width = root.clientWidth || 900, height = root.clientHeight || 460;
+    const width = root.clientWidth || 900, height = root.clientHeight || 480;
     const compact = width < 700;
-    const gap = compact ? 1.72 : 2.42;
-    shirtGroups.forEach((s, i) => {
-      s.group.position.x = (i - 1.5) * gap;
-      s.group.scale.setScalar(compact ? 0.72 : 1);
-      s.group.userData.baseX = s.group.position.x;
-    });
+    const gap = compact ? 1.76 : 2.48;
+    shirts.forEach((s, i) => { s.group.position.x = (i - 1.5) * gap; });
     renderer.setSize(width, height, false);
-    camera.aspect = width / height;
-    camera.position.z = compact ? 13.9 : 12.8;
-    camera.fov = compact ? 37 : 34;
+    camera.aspect = width / height; camera.position.z = compact ? 14.8 : 13.1; camera.fov = compact ? 37 : 32;
     camera.updateProjectionMatrix();
   }
-  if ('ResizeObserver' in window) new ResizeObserver(resize).observe(root);
-  else window.addEventListener('resize', resize);
+  if ('ResizeObserver' in window) new ResizeObserver(resize).observe(root); else window.addEventListener('resize', resize);
   resize();
-
-  window.addEventListener('aarv:select', event => {
-    const item = shirtGroups.find(s => s.id === event.detail?.id);
-    if (item && item !== active) selectShirt(item);
+  window.addEventListener('aarv:select', e => {
+    const item = shirts.find(s => s.id === e.detail?.id); if (item && item !== active) select(item);
   });
 
   const clock = new THREE.Clock();
+  const reduceMotion = window.matchMedia?.('(prefers-reduced-motion: reduce)').matches;
   function animate() {
     requestAnimationFrame(animate);
-    const elapsed = clock.getElapsedTime();
-    shirtGroups.forEach((s, i) => {
+    const time = clock.getElapsedTime();
+    shirts.forEach((s, i) => {
       const g = s.group;
-      if (!dragging || downGroup !== s) {
-        if (Math.abs(g.userData.dragVelocity) > 0.0005) {
-          g.rotation.y += g.userData.dragVelocity;
-          g.userData.dragVelocity *= 0.91;
-        } else if (s !== active) {
-          g.rotation.y += (Math.sin(elapsed * 0.28 + i * 0.6) * 0.025 - g.rotation.y) * 0.012;
-        }
+      if (!dragging || down !== s) {
+        if (Math.abs(g.userData.dragVelocity) > .0005) { g.rotation.y += g.userData.dragVelocity; g.userData.dragVelocity *= .91; }
+        else if (s !== active && !reduceMotion) g.rotation.y += (Math.sin(time * .24 + i * .65) * .018 - g.rotation.y) * .009;
       }
-      const targetY = g.userData.targetY ?? g.userData.baseY;
-      const targetScale = g.userData.targetScale ?? 1;
-      g.position.y += (targetY + Math.sin(elapsed * 0.75 + i * 0.7) * 0.012 - g.position.y) * 0.035;
-      const desired = (window.innerWidth < 700 ? 0.72 : 1) * targetScale;
-      const current = g.scale.x;
-      const next = current + (desired - current) * 0.045;
-      g.scale.setScalar(next);
+      const y = g.userData.targetY ?? g.userData.baseY;
+      g.position.y += (y + (reduceMotion ? 0 : Math.sin(time * .55 + i * .7) * .008) - g.position.y) * .035;
+      const target = g.userData.targetScale ?? 1;
+      const scale = g.scale.x + (target - g.scale.x) * .045; g.scale.setScalar(scale);
     });
     renderer.render(scene, camera);
   }

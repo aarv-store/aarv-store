@@ -1,0 +1,19 @@
+PEMBARUAN SHOWROOM 3D AЯRV — 17 NOVEMBER 2026
+
+Yang diperbarui:
+1. Galeri detail 4 produk sekarang memakai foto produk depan dan belakang terbaru yang dikirim pengguna.
+2. Rak 3D tetap menampilkan 4 desain: CAT-01, FOX-02, DUCK-03, dan SUBJECT-04.
+3. Mesh kaos dibuat melengkung dengan lipatan kain halus, pencahayaan studio hangat, hanger kayu, rail metal, dan rotasi drag 360 derajat.
+4. File cut-out 3D dibersihkan dari teks FRONT/BACK di luar bentuk kaos.
+5. Kontrol drag mendukung mouse dan sentuhan; tombol panah kiri/kanan juga dapat memutar kaos yang aktif.
+
+Cara update GitHub Pages:
+- Ekstrak ZIP.
+- Buka folder katalog-toko-wa-main.
+- Upload seluruh isi folder ke repository aarv-store.github.io/aarv-store/ dan pilih Replace files bila diminta.
+- Pastikan folder img, rack-3d.js, produk.js, index.html, dan style.css ikut terunggah.
+
+Catatan teknis:
+Viewer ini menggunakan mesh kain 3D melengkung dengan tekstur foto/cut-out depan dan belakang. Putaran 360 derajat bersifat interaktif, tetapi belum merupakan simulasi kain volumetrik penuh seperti hasil CLO3D/Blender dengan model GLB/GLTF. Untuk tingkat realisme tertinggi pada sudut samping, lipatan, dan jatuh kain, tahap berikutnya adalah membuat model kaos boxy fit AЯRV di CLO3D/Blender lalu mengekspornya sebagai GLB/GLTF.
+
+Jangan menghapus kredit template Maliki Saputra dan file LICENSE; kredit tersebut merupakan syarat lisensi template.
